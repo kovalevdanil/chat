@@ -11,9 +11,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-// #include </home/martin/chat/consts.h>
-// #include </home/martin/chat/usrmsg.h>
-#include </home/martin/chat/commandhandler.cpp>
+#include <commandhandler.cpp>
 
 int set_nonblock(int fd)
 {
