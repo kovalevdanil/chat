@@ -31,7 +31,11 @@ int set_nonblock(int fd)
 //Checking if id recieved properly
 bool is_correct_form(char *p, int what)
 {
-    bool is_correct = true;
+    char *colon = strchr(p, ':');
+
+    if (!colon || strchr(colon + 1, ':'))
+        return false;
+    
     if (what == AUTHORIZATION)
     {
         if (*p < '0' || *p > '9')
@@ -54,22 +58,10 @@ int get_id(char *req, int who)
     if (!is_correct_form(req, AUTHORIZATION))
         return 0;
 
-    std::string ID;
-    if (who == USER)
-    {
-        while (*req != ':' && *req)
-            ID += *req++;
-    }
-    else if (who == RECIP)
-    {
-        while (*req != ':')
-            req++;
-        req++;
-        while (*req >= '0' && *req <= '9')
-            ID += *req++;
-    }
+    char *p = req;
+    if (who == RECIP) p = strchr(req, ':') + 1; 
 
-    return atoi(ID.c_str());
+    return atoi(p);
 }
 
 bool is_delivered(struct message msg)
