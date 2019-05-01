@@ -28,6 +28,7 @@ int set_nonblock(int fd)
 #endif
 }
 
+//Checking if id recieved properly
 bool is_correct_form(char *p, int what)
 {
     bool is_correct = true;
@@ -64,7 +65,7 @@ int get_id(char *req, int who)
         while (*req != ':')
             req++;
         req++;
-        while (*req >= '0' && *req <= '9') 
+        while (*req >= '0' && *req <= '9')
             ID += *req++;
     }
 
@@ -80,9 +81,9 @@ int main()
 {
     int MasterSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
-    std::set<int> Sockets; // slave sockets (not slav)
-    std::vector<message> Messages; // message to delive 
-    std::map<int, struct user> Users; // all connected users <FD, USER>
+    std::set<int> Sockets;            // slave sockets (not slav)
+    std::vector<message> Messages;    // message to delive
+    std::map<int, struct user> Users; // all connected users <SOCKET_FD, USER>
 
     struct sockaddr_in SockAddr;
 
@@ -109,86 +110,87 @@ int main()
 
     while (1)
     {
+        // Creating fd_set for using select()
         fd_set Set;
         FD_ZERO(&Set);
         FD_SET(MasterSocket, &Set);
-        for (auto iter = Sockets.begin(); iter != Sockets.end(); iter++)
+        for (auto iter = Sockets.begin(); iter != Sockets.end(); iter++) // add Slaves in fd_set
             FD_SET(*iter, &Set);
 
-        int Max = std::max(MasterSocket, *std::max_element(Sockets.begin(), Sockets.end()));
+        int Max = std::max(MasterSocket, *std::max_element(Sockets.begin(), Sockets.end())); //searching max descriptor for using select()
 
         select(Max + 1, &Set, NULL, NULL, NULL);
 
         for (auto iter = Sockets.begin(); iter != Sockets.end(); iter++)
         {
-            if (FD_ISSET(*iter, &Set))
+            if (!FD_ISSET(*iter, &Set)) // if 0 then no events, continue
+                continue;
+
+            struct user *current_user = &Users[*iter]; 
+
+            static char buffer[1024];
+            int RecvSize = recv(*iter, buffer, sizeof(buffer), MSG_NOSIGNAL);
+
+            if ((RecvSize == 0) && errno != EAGAIN) // shut connection
             {
-                struct user *current_user = &Users[*iter];
+                shutdown(*iter, SHUT_RDWR);
+                close(*iter);
 
-                static char buffer[1024];
-                int RecvSize = recv(*iter, buffer, sizeof(buffer), MSG_NOSIGNAL);
-
-                if ((RecvSize == 0) && errno != EAGAIN)
+                Users.erase(*iter);
+                Sockets.erase(iter);
+            }
+            else if (RecvSize != 0)
+            {
+                if (!current_user->authorized) // authorizing (in work)
                 {
-                    shutdown(*iter, SHUT_RDWR);
-                    close(*iter);
-
-                    Users.erase(*iter);
-                    Sockets.erase(iter);
-                }
-                else if (RecvSize != 0)
-                {
-                    if (!current_user->authorized)
-                    {
-                        int ID = get_id(buffer, USER);
-                        int RECIP_ID = get_id(buffer, RECIP);
-                        for (auto iter = Users.begin(); iter != Users.end(); iter++)
-                            if (ID == iter -> second.ID) 
-                            {
-                                ID = -1;
-                                break;
-                            }
-                        if (ID != -1)
+                    int ID = get_id(buffer, USER);
+                    int RECIP_ID = get_id(buffer, RECIP);
+                    for (auto iter = Users.begin(); iter != Users.end(); iter++)
+                        if (ID == iter->second.ID)
                         {
-                            if (ID == 0 || RECIP_ID == 0)
-                            {
-                                send(*iter, notifications[REAUTHOR], strlen(notifications[REAUTHOR]), MSG_NOSIGNAL);
-                                continue;
-                            }
-                            current_user->ID = ID;
-                            current_user->ID_adr = RECIP_ID;
-                            current_user->authorized = true;
+                            ID = -1;
+                            break;
                         }
-                        else 
+                    if (ID != -1)
+                    {
+                        if (ID == 0 || RECIP_ID == 0)
                         {
-                            send(*iter, notifications[REDEFID], strlen(notifications[REDEFID]), MSG_NOSIGNAL);
+                            send(*iter, notifications[REAUTHOR], strlen(notifications[REAUTHOR]), MSG_NOSIGNAL);
                             continue;
                         }
+                        current_user->ID = ID;
+                        current_user->ID_adr = RECIP_ID;
+                        current_user->authorized = true;
                     }
                     else
                     {
-                        // adding message in vector<message>
-                        if (buffer[0] != '-')
-                        {
-                            struct message cur_message;
-                            buffer[RecvSize] = '\0';
+                        send(*iter, notifications[REDEFID], strlen(notifications[REDEFID]), MSG_NOSIGNAL);
+                        continue;
+                    }
+                }
+                else
+                {
+                    // adding message in vector<message>
+                    if (buffer[0] != '-') //regular message
+                    {
+                        struct message cur_message;
+                        buffer[RecvSize] = '\0';
 
-                            memcpy(cur_message.Message, buffer, RecvSize + 1);
-                            //cur_message.message = buffer;
-                            cur_message.delivered = false;
-                            cur_message.id_from = current_user->ID;
-                            cur_message.id_recip = current_user->ID_adr;
+                        memcpy(cur_message.Message, buffer, RecvSize + 1);
+                        //cur_message.message = buffer;
+                        cur_message.delivered = false;
+                        cur_message.id_from = current_user->ID;
+                        cur_message.id_recip = current_user->ID_adr;
 
-                            Messages.push_back(cur_message);
-                        }
-                        else
-                        {
-                            char cmd[50];
-                            memcpy(cmd, buffer, RecvSize);
-                            commandhandler cmh(cmd, current_user);
-                            if (cmh.do_commands())
-                                send(*iter, notifications[WRONGCMD], strlen(notifications[WRONGCMD]), MSG_NOSIGNAL);
-                        }
+                        Messages.push_back(cur_message);
+                    }
+                    else //command handler
+                    {
+                        char cmd[50];
+                        memcpy(cmd, buffer, RecvSize);
+                        commandhandler cmh(cmd, current_user);
+                        if (cmh.do_commands())
+                            send(*iter, notifications[WRONGCMD], strlen(notifications[WRONGCMD]), MSG_NOSIGNAL);
                     }
                 }
             }
@@ -242,7 +244,9 @@ int main()
                 send(recip_sock, message->Message, strlen(message->Message), MSG_NOSIGNAL);
                 message->delivered = true;
             }
-        } 
+        }
+
+        //erasing delivered messages
         Messages.erase(std::remove_if(Messages.begin(), Messages.end(), is_delivered), Messages.end());
     }
     return 0;

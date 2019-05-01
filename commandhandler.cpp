@@ -6,7 +6,7 @@
 
 #include </home/martin/chat/usrmsg.h>
 #include </home/martin/chat/consts.h>
-#include </home/martin/chat/format.cpp>
+// #include </home/martin/chat/format.cpp>
 
 std::map<std::string, int> commands = {
     {"-cp", CHANGERECIP},
