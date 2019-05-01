@@ -4,8 +4,8 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
-#include </home/martin/chat/usrmsg.h>
-#include </home/martin/chat/consts.h>
+#include "usrmsg.h"
+#include "consts.h"
 // #include </home/martin/chat/format.cpp>
 
 std::map<std::string, int> commands = {
