@@ -1,4 +1,4 @@
-all: server
+all: server, app
 
 server:
 	g++ chatserv.cpp -o chatserv
