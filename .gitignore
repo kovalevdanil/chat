@@ -1,3 +1,10 @@
-/home/martin/code/vscode/*
+.vscode/*
 
-format*
+server/format*
+server/chatserv
+server/testserv*
+server/commandhandler
+server/new_auth.cpp
+application/app
+
+*.txt
