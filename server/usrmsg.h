@@ -1,8 +1,9 @@
 struct message
 {
     int id_from, id_recip;
-    char Message[100];
+    char Message[120];
     bool delivered;
+    char *name;
 };
 
 struct user
@@ -11,5 +12,5 @@ struct user
     short int ID_adr;
     int sockfd;
     bool authorized;
-    char *name;
+    char name[20], password[20];
 };
