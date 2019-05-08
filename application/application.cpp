@@ -18,23 +18,13 @@
 
 std::mutex stream_mute;
 
-void insertchar(char *where, char what, int ind)
+command format_command(char *cmd)
 {
-    int size = strlen(where);
-
-    if (ind < 0 || ind > size)
-        return;
-
-    for (int i = size + 1; i > ind; i--)
-        where[i] = where[i - 1];
-    where[ind] = what;
-}
-
-int format_command(char *cmd)
-{
-    char *space = strchr(cmd, ' ');
-    if (!space)
-        *space = '\0';
+    char *separator = strchr(cmd, ' ');
+    if (!separator)
+        separator = strchr(cmd, '\n');
+    if (separator)
+        *separator = '\0';
     command my_cmd;
 
     if (!strcmp(cmd, "~online"))
@@ -52,14 +42,29 @@ int format_command(char *cmd)
 
     if (my_cmd == chat)
     {
-        if (space)
-        {
-            *space = '\0';
-            char *second_space = strchr(space + 1, ' ');
-            if (second_space)
-                *second_space = '\0';
-        }
+        if (!separator)
+            return error;
+
+        cmd[0] = COMMAND;
+        cmd[1] = ':';
+        cmd[2] = my_cmd + '0';
+        cmd[3] = ':';
+        char *next_sep = strchr(separator + 1, ' ');
+        if (next_sep)
+            *next_sep = '\0';
+        strcpy(cmd + 4, separator + 1);
+        
+        
     }
+    else
+    {
+        cmd[0] = COMMAND;
+        cmd[1] = ':';
+        cmd[2] = my_cmd + '0';
+        cmd[3] = '\0';
+    }
+
+    return my_cmd;
 }
 
 void shift(char *buffer, int num)
@@ -77,30 +82,25 @@ void send_proc(int sockfd)
         std::cin.getline(buffer, 1022);
 
         size_t size = strlen(buffer);
-        buffer[size++] = '\n';
-        buffer[size] = '\0';
 
         if (buffer[0] == '~')
         {
-            if (!format_command(buffer))
+            command cmd;
+            if (!(cmd = format_command(buffer)))
             {
                 std::cout << "app: wrong command.\n";
                 continue;
             }
-            shift(buffer, 1);
-            buffer[0] = COMMAND;
-            buffer[1] = ':';
+            size = strlen(buffer);
         }
         else
         {
             shift(buffer, 2);
             buffer[0] = MESSAGE;
             buffer[1] = ':';
+            size += 2;
         }
-
-        // stream_mute.lock();
         send(sockfd, buffer, size, MSG_NOSIGNAL);
-        // stream_mute.unlock();
     }
 }
 
@@ -160,25 +160,18 @@ int main(int argc, char **argv)
             switch (code)
             {
             case ERROR:
-                // stream_mute.lock();
-                std::cout << "server: " << responses[atoi(p)];
-                // stream_mute.unlock();
-                break;
-            case MESSAGE:
-                // stream_mute.lock();
-                std::cout << p;
-                // stream_mute.unlock();
-                break;
-            case CMD_RESPONSE:
-                // stream_mute.lock();
-                std::cout << "server: " << p;
-                // stream_mute.unlock();
+            {
+                int message_num = atoi(p);
+                std::cout << "server: " << responses_text[message_num] << std::endl;
                 break;
             }
-
-            // stream_mute.lock();
-            // std::cout << buffer;
-            // stream_mute.unlock();
+            case MESSAGE:
+                std::cout << p << std::endl;
+                break;
+            case CMD_RESPONSE:
+                std::cout << "server: " << cmd_responses[atoi(p)] << std::endl;
+                break;
+            }
         }
     }
 }

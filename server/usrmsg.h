@@ -9,7 +9,7 @@ struct message
 struct user
 {
     short int ID;
-    short int ID_adr;
+    short int ID_RECIP;
     int sockfd;
     bool authorized;
     char name[20], password[20];
