@@ -48,9 +48,18 @@ class commandhandler
                 is_avaliable = true;
             }
         if (is_avaliable)
+        {
+            User -> sent_notif = false;
             send (User -> sockfd, cmd_responses[IN_CHAT], strlen(cmd_responses[IN_CHAT]), MSG_NOSIGNAL);
+        }
         else 
             send (User -> sockfd, cmd_responses[DOESNT_AVALIABLE], strlen(cmd_responses[DOESNT_AVALIABLE]), MSG_NOSIGNAL);
+    }
+
+    void leave(struct user *User)
+    {
+        User -> ID_RECIP = 0;
+        send(User -> sockfd, cmd_responses[LEFT_CHAT], strlen(cmd_responses[LEFT_CHAT]), MSG_NOSIGNAL);
     }
 
 public:
@@ -71,6 +80,9 @@ public:
             set_recip(User, &Users, name);
             break;
         }
+        case leave_chat:
+            leave(User);
+            break;
         }
     }
 };

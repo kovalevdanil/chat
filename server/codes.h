@@ -14,13 +14,15 @@
 // cmd response
 #define DOESNT_AVALIABLE 0
 #define IN_CHAT 1
+#define LEFT_CHAT 2
 
 const char *responses_text[] = {"the nickname is already used, please enter other: ", "wrong password, please try again: ",
                         "passwords doesn't match, try again: ", "you haven't chose a dialogue",
                         "please authorize using form: \"NICKNAME:PASSWORD\""};
-const char *cmd_responses_text[] = {"user isn't avaliable right now", "done, you're in chat"};
-const char *responses[] = {"0:0", "0:1", "0:2", "0:3", "0:4"};
-const char *cmd_responses[] = {"3:0", "3:1"};
+const char *cmd_responses_text[] = {"user isn't avaliable right now", "done, you're in chat", "you left the chat"};
 
-enum command{error, online, chat, myid, disconnect, help};
+const char *responses[] = {"0:0", "0:1", "0:2", "0:3", "0:4"};
+const char *cmd_responses[] = {"3:0", "3:1", "3:2"};
+
+enum command{error, online, chat, myid, disconnect, help, leave_chat};
 

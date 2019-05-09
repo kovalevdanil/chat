@@ -37,6 +37,8 @@ command format_command(char *cmd)
         my_cmd = help;
     else if (!strcmp(cmd, "~chat"))
         my_cmd = chat;
+    else if (!strcmp(cmd, "~leave"))
+        my_cmd = leave_chat;
     else
         error;
 
@@ -181,7 +183,7 @@ int main(int argc, char **argv)
                 break;
             }
             case NOTIFICATION:
-                std::cout << server << p << std::endl;
+                std::cout << p << std::endl;
                 break;
             }
         }
