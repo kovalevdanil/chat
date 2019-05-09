@@ -163,21 +163,21 @@ int main(int argc, char **argv)
             case ERROR:
             {
                 int message_num = atoi(p);
-                std::cout << "server: " << responses_text[message_num] << std::endl;
+                std::cout << server << responses_text[message_num] << std::endl;
                 break;
             }
             case MESSAGE:
-                std::cout << p << std::endl;
+                std::cout << p;
                 break;
             case CMD_RESPONSE:
             {
                 if (*p >= '0' && *p <= '9')
                 {
                     int cmd_num = atoi(p);
-                    std::cout << "server: " << cmd_responses_text[cmd_num] << std::endl;
+                    std::cout << server << cmd_responses_text[cmd_num] << std::endl;
                 }
                 else
-                    std::cout << "server: " << p << std::endl;
+                    std::cout << server << p << std::endl;
             }
             break;
             }

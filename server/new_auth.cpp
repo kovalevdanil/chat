@@ -30,30 +30,6 @@ int set_nonblock(int fd)
 #endif
 }
 
-// void *get_auth_info(char *id_form, int what)
-// {
-    // if (!strchr(id_form, ' '))
-        // return NULL;
-
-    // char *p;
-    // if (what == NAME)
-    // {
-        // int len = 0;
-        // while (id_form[len] != ' ')
-            // len++;
-        // p = new char[len + 1];
-        // memcpy(p, id_form, len);
-        // *(p + len) = '\0';
-        // return p;
-    // }
-    // else if (what == ID_AUTH)
-    // {
-        // p = strchr(id_form, ' ') + 1;
-        // int *ret = new int(atoi(p));
-        // return (void *)ret;
-    // }
-// }
-
 int authorize(struct user *usr, char *id_form)
 {
     char *name = id_form;
@@ -89,6 +65,10 @@ void set_name(char *buffer, char *name)
     memcpy(buffer + 2, name, len_name);
     buffer[len_name + 2] = ':';
     buffer[len_name + 3] = ' ';
+
+    int cur_size = strlen(buffer);
+    buffer[cur_size++] = '\n';
+    buffer[cur_size] = '\0';
 }
 
 bool is_delivered(struct message msg)
@@ -164,7 +144,7 @@ int main()
                 {
                     if (!authorize(current_user, buffer + 2))
                         send(*iter, responses[AUTHORIZE],
-                             sizeof(responses[AUTHORIZE]), MSG_NOSIGNAL);
+                             strlen(responses[AUTHORIZE]), MSG_NOSIGNAL);
                 }
                 else
                 {
@@ -173,7 +153,7 @@ int main()
                     {
                         if (!current_user->ID_RECIP)
                         {
-                            send(*iter, responses[CHOOSE_DIALOGUE], sizeof(responses[CHOOSE_DIALOGUE]), MSG_NOSIGNAL);
+                            send(*iter, responses[CHOOSE_DIALOGUE], strlen(responses[CHOOSE_DIALOGUE]), MSG_NOSIGNAL);
                             continue;
                         }
 
@@ -187,14 +167,14 @@ int main()
                         cur_message.delivered = false;
                         cur_message.id_from = current_user->ID;
                         cur_message.id_recip = current_user->ID_RECIP;
-                        cur_message.name = current_user -> name; // very doubtful (if person is disconnected, his name is deleted)
+                        strcpy(cur_message.name, current_user->name);
 
                         Messages.push_back(cur_message);
                     }
                     else if (buffer[0] == COMMAND) //command
                     {
                         buffer[RecvSize] = '\0';
-                        char *cmd = &buffer[2]; 
+                        char *cmd = &buffer[2];
                         commandhandler command_handle(cmd, current_user, Users);
                     }
                 }
@@ -217,7 +197,7 @@ int main()
             Users[new_fd] = new_user;
 
             send(new_fd, responses[AUTHORIZE],
-                 sizeof(responses[AUTHORIZE]), MSG_NOSIGNAL);
+                 strlen(responses[AUTHORIZE]), MSG_NOSIGNAL);
         }
 
         // Messages delivering
@@ -227,12 +207,16 @@ int main()
             int recip_sock = 0;
             int id_recip = message->id_recip;
 
-            for (auto iter = Users.begin(); iter != Users.end(); iter++)
+            auto iter = Users.begin();
+            for (; iter != Users.end(); iter++)
                 if ((iter->second).ID == id_recip)
                 {
                     recip_sock = iter->first;
                     break;
                 }
+                
+            if ((iter->second).ID_RECIP != message -> id_from)
+                continue; 
 
             bool is_available = false;
             for (auto i = Sockets.begin(); i != Sockets.end(); i++)

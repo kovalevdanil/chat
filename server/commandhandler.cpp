@@ -48,13 +48,13 @@ class commandhandler
                 is_avaliable = true;
             }
         if (is_avaliable)
-            send (User -> sockfd, cmd_responses[IN_CHAT], sizeof(cmd_responses[IN_CHAT]), MSG_NOSIGNAL);
+            send (User -> sockfd, cmd_responses[IN_CHAT], strlen(cmd_responses[IN_CHAT]), MSG_NOSIGNAL);
         else 
-            send (User -> sockfd, cmd_responses[DOESNT_AVALIABLE], sizeof(cmd_responses[DOESNT_AVALIABLE]), MSG_NOSIGNAL);
+            send (User -> sockfd, cmd_responses[DOESNT_AVALIABLE], strlen(cmd_responses[DOESNT_AVALIABLE]), MSG_NOSIGNAL);
     }
 
 public:
-    commandhandler(char *_command, struct user *User, map<int, struct user>  &Users)
+    commandhandler(char *_command, struct user *User, users_struct  &Users)
     {
         command cmd = (command) (_command[0] - '0');
         switch (cmd)

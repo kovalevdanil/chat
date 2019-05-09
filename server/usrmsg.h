@@ -1,9 +1,9 @@
 struct message
 {
     int id_from, id_recip;
-    char Message[120];
+    char Message[100];
     bool delivered;
-    char *name;
+    char name[20];
 };
 
 struct user

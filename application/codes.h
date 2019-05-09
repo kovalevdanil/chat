@@ -21,5 +21,7 @@ const char *cmd_responses_text[] = {"user isn't avaliable right now", "done, you
 const char *responses[] = {"0:0", "0:1", "0:2", "0:3", "0:4"};
 const char *cmd_responses[] = {"3:0", "3:1"};
 
+const char server[] = "\033[1;31mserver: \033[0m";
+
 enum command{error, online, chat, myid, disconnect, help};
 
