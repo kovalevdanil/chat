@@ -52,9 +52,10 @@ command format_command(char *cmd)
         char *next_sep = strchr(separator + 1, ' ');
         if (next_sep)
             *next_sep = '\0';
-        strcpy(cmd + 4, separator + 1);
-        
-        
+        size_t size = strlen(separator + 1);
+        memcpy(cmd + 4, separator + 1, size);
+
+        cmd[size + 4] = '\0';
     }
     else
     {
@@ -169,8 +170,16 @@ int main(int argc, char **argv)
                 std::cout << p << std::endl;
                 break;
             case CMD_RESPONSE:
-                std::cout << "server: " << cmd_responses[atoi(p)] << std::endl;
-                break;
+            {
+                if (*p >= '0' && *p <= '9')
+                {
+                    int cmd_num = atoi(p);
+                    std::cout << "server: " << cmd_responses_text[cmd_num] << std::endl;
+                }
+                else
+                    std::cout << "server: " << p << std::endl;
+            }
+            break;
             }
         }
     }

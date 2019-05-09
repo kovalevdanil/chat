@@ -19,7 +19,7 @@ const char *responses_text[] = {"the nickname is already used, please enter othe
                         "please authorize using form: \"NICKNAME:PASSWORD\""};
 const char *cmd_responses_text[] = {"user isn't avaliable right now", "done, you're in chat"};
 const char *responses[] = {"0:0", "0:1", "0:2", "0:3", "0:4"};
-const char *cmd_responses[] = {"2:0", "2:1"};
+const char *cmd_responses[] = {"3:0", "3:1"};
 
 enum command{error, online, chat, myid, disconnect, help};
 

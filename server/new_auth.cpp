@@ -187,12 +187,13 @@ int main()
                         cur_message.delivered = false;
                         cur_message.id_from = current_user->ID;
                         cur_message.id_recip = current_user->ID_RECIP;
-                        cur_message.name = cur_message.name; // very doubtful (if person is disconnected, his name is deleted)
+                        cur_message.name = current_user -> name; // very doubtful (if person is disconnected, his name is deleted)
 
                         Messages.push_back(cur_message);
                     }
                     else if (buffer[0] == COMMAND) //command
                     {
+                        buffer[RecvSize] = '\0';
                         char *cmd = &buffer[2]; 
                         commandhandler command_handle(cmd, current_user, Users);
                     }
