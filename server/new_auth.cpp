@@ -193,6 +193,7 @@ int main()
             new_user.ID_RECIP = 0;
             new_user.sockfd = new_fd;
             new_user.authorized = false;
+            new_user.sent_notif = false;
 
             Users[new_fd] = new_user;
 
@@ -214,9 +215,23 @@ int main()
                     recip_sock = iter->first;
                     break;
                 }
-                
-            if ((iter->second).ID_RECIP != message -> id_from)
-                continue; 
+            if (!recip_sock)
+                continue;
+
+            if ((iter->second).ID_RECIP != message->id_from)
+            {
+                if (!iter->second.sent_notif)
+                {
+                    char notif[50] = "x:you've got message from ";
+                    notif[0] = NOTIFICATION;
+                    size_t size = strlen(notif);
+                    strcpy(notif + size, message->name);
+                    size = strlen(notif);
+                    send(recip_sock, notif, size, MSG_NOSIGNAL);
+                    iter -> second.sent_notif = true;
+                }
+                continue;
+            }
 
             bool is_available = false;
             for (auto i = Sockets.begin(); i != Sockets.end(); i++)

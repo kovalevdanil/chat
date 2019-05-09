@@ -178,8 +178,11 @@ int main(int argc, char **argv)
                 }
                 else
                     std::cout << server << p << std::endl;
+                break;
             }
-            break;
+            case NOTIFICATION:
+                std::cout << server << p << std::endl;
+                break;
             }
         }
     }

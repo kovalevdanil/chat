@@ -11,6 +11,7 @@ struct user
     short int ID;
     short int ID_RECIP;
     int sockfd;
+    bool sent_notif;
     bool authorized;
     char name[20], password[20];
 };

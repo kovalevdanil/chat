@@ -2,6 +2,7 @@
 #define MESSAGE '1'
 #define COMMAND '2'
 #define CMD_RESPONSE '3'
+#define NOTIFICATION '4'
 
 // errors/requests
 #define NICK_IS_ALREADY_USED 0
