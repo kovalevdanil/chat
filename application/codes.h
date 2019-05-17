@@ -15,13 +15,14 @@
 #define DOESNT_AVALIABLE 0
 #define IN_CHAT 1
 #define LEFT_CHAT 2
+#define RECIP_LEFT 3
 
 const char *responses_text[] = {"the nickname is already used, please enter other: ", "wrong password, please try again: ",
                         "passwords doesn't match, try again: ", "you haven't chose a dialogue",
                         "please authorize using form: \"NICKNAME:PASSWORD\""};
-const char *cmd_responses_text[] = {"user isn't avaliable right now", "done, you're in chat", "you left the chat"};
+const char *cmd_responses_text[] = {"user isn't avaliable right now", "done, you're in chat", "you left the chat", "user left chat"};
 const char *responses[] = {"0:0", "0:1", "0:2", "0:3", "0:4"};
-const char *cmd_responses[] = {"3:0", "3:1"};
+const char *cmd_responses[] = {"3:0", "3:1", "3:2", "3:3"};
 
 const char server[] = "\033[1;31mserver: \033[0m";
 

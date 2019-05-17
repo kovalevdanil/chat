@@ -176,6 +176,15 @@ int main()
                         buffer[RecvSize] = '\0';
                         char *cmd = &buffer[2];
                         commandhandler command_handle(cmd, current_user, Users);
+
+                        if (current_user->ID == 0)
+                        {
+                            shutdown(*iter, SHUT_RDWR);
+                            close(*iter);
+
+                            Users.erase(*iter);
+                            Sockets.erase(iter);
+                        }
                     }
                 }
             }
@@ -228,7 +237,7 @@ int main()
                     strcpy(notif + size, message->name);
                     size = strlen(notif);
                     send(recip_sock, notif, size, MSG_NOSIGNAL);
-                    iter -> second.sent_notif = true;
+                    iter->second.sent_notif = true;
                 }
                 continue;
             }

@@ -62,6 +62,23 @@ class commandhandler
         send(User -> sockfd, cmd_responses[LEFT_CHAT], strlen(cmd_responses[LEFT_CHAT]), MSG_NOSIGNAL);
     }
 
+    void disconnect_(struct user *User, users_struct &Users)
+    {
+        if (User -> ID_RECIP != 0)
+        {
+            int ID = User -> ID_RECIP;
+            for (auto iter = Users.begin(); iter != Users.end(); iter++)
+            {
+                if (iter -> second.ID == ID)
+                {
+                    iter -> second.ID_RECIP = 0;
+                    send(iter -> first, cmd_responses[RECIP_LEFT], sizeof(cmd_responses[RECIP_LEFT]), MSG_NOSIGNAL);
+                    break;
+                }
+            }
+        }
+        User -> ID = 0;
+    }
 public:
     commandhandler(char *_command, struct user *User, users_struct  &Users)
     {
@@ -83,6 +100,8 @@ public:
         case leave_chat:
             leave(User);
             break;
+        case disconnect:
+            disconnect_(User, Users);
         }
     }
 };
